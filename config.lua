@@ -1,7 +1,7 @@
 Config = {}
 
 Config.ItemSet = {
- [0] = nil   
+ [0] = nil,   
  [1] = "item_blueberry",
  [2] = "item_stick",
  [3] = "item_cricket",
