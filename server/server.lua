@@ -3,17 +3,22 @@ TriggerEvent('rdx:getSharedObject', function(obj) RDX = obj end)
 
 RegisterServerEvent('rdx:addBlueBerry')
 AddEventHandler('rdx:addBlueBerry', function() 
-	local xPlayer = RDX.GetPlayerFromId(source)
+	local xPlayer = RDX.GetPlayerFromId(source)	
+	local item = math.random(0,3)
+	local amount = 1
+
+	if item ~= nil then
+	xPlayer.addInventoryItem(Config.ItemSet[item], amount)  
 	math.randomseed(GetGameTimer())
-	local amount = math.random(1,2)
-	
-	xPlayer.addInventoryItem("item_blueberry", 1)  	
-        xPlayer.addInventoryItem("item_stick", 1)
-	xPlayer.addInventoryItem("item_cricket", 1)
+	-- msg
+    else
+	-- msg
+	end	
 end)
 
 RDX.RegisterUsableItem("item_blueberry", function(source)
    local xPlayer = RDX.GetPlayerFromId(source)   
    xPlayer.removeInventoryItem("item_blueberry", 1)   
-   TriggerClientEvent("rdx:EatBlueBerry", xPlayer)		
+   TriggerClientEvent("rdx:EatBlueBerry", xPlayer)
+   -- msg		
 end)

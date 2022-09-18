@@ -3,7 +3,7 @@ Citizen.CreateThread(function()	while RDX == nil do TriggerEvent('rdx:getSharedO
 
 local CollectPrompt
 local active = false
-local amount = 0
+local stomach = 0
 local cooldown = 0
 local oldBush = {}
 local checkbush = 0
@@ -75,11 +75,15 @@ AddEventHandler('rdx:EatBlueBerry', function()
     end
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(2500)
-    TriggerServerEvent('wwrp_status:eatberry')
-    amount = amount + 1
-    if amount > 5 then
-        Wait(15000)
-        startSickness()
+    
+    stomach = stomach + 1
+    if stomach > 0 then
+        Wait(2000)
+        startRegen() 
+    else if stomach > 5 then
+        Wait(2000)
+        startSickness() 
+            
     end
     ClearPedTasks(playerPed)
 end)
@@ -87,7 +91,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        Wait(60000)
+        Wait(30000)
         if stomach > 0 then
             stomach = stomach - 1
         end
@@ -95,6 +99,7 @@ Citizen.CreateThread(function()
 end)
 
 function startSickness()
+    
     local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
     local anim = "idle_g"
     RequestAnimDict(dict)
@@ -104,12 +109,39 @@ function startSickness()
     local test = 10
     Citizen.CreateThread(function()
         while test > 0 do
+            local IsPedSick = true
+            if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
+                TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
+            end
+            Wait(5000)
+            local hp = GetEntityHealth(PlayerPedId())
+            SetEntityHealth(PlayerPedId(),hp-5)
+            test = test - 1
+        end
+        ClearPedTasksImmediately(PlayerPedId())
+        IsPedSick = false
+    end)
+end
+
+function startRegen()
+    local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
+    local anim = "idle_g"
+    RequestAnimDict(dict)
+    while not HasAnimDictLoaded(dict) do
+        Wait(100)
+    end
+    local test = 10
+    Citizen.CreateThread(function()
+        while test > 0 do
+            if IsPedSick == true then
+               break
+            end    
             if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
                 TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
             end
             Wait(2000)
             local hp = GetEntityHealth(PlayerPedId())
-            SetEntityHealth(PlayerPedId(),hp-5)
+            SetEntityHealth(PlayerPedId(),hp+5)
             test = test - 1
         end
         ClearPedTasksImmediately(PlayerPedId())
