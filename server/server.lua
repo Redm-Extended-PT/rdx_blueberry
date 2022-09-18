@@ -8,8 +8,8 @@ AddEventHandler('rdx:addBlueBerry', function()
 	local amount = math.random(1,2)
 	
 	xPlayer.addInventoryItem("item_blueberry", 1)  	
-        xPlayer.removeInventoryItem("item_stick", 1)
-	xPlayer.removeInventoryItem("item_cricket", 1)
+        xPlayer.addInventoryItem("item_stick", 1)
+	xPlayer.addInventoryItem("item_cricket", 1)
 end)
 
 RDX.RegisterUsableItem("item_blueberry", function(source)
