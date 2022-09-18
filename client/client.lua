@@ -1,32 +1,15 @@
-local EatPrompt
+RDX = nil
+Citizen.CreateThread(function()	while RDX == nil do TriggerEvent('rdx:getSharedObject', function(obj) RDX = obj end) Citizen.Wait(300) end end)
+
 local CollectPrompt
 local active = false
-local eat = false
 local amount = 0
 local cooldown = 0
 local oldBush = {}
 local checkbush = 0
 local bush
-
-
 local BlueBerrygroup = GetRandomIntInRange(0, 0xffffff)
 print('BlueBerrygroup: ' .. BlueBerrygroup)
-
-function EatBlueberry()
-    Citizen.CreateThread(function()
-        local str = 'Eat'
-        local wait = 0
-        EatPrompt = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(EatPrompt, 0xC7B5340A)
-        str = CreateVarString(10, 'LITERAL_STRING', str)
-        PromptSetText(EatPrompt, str)
-        PromptSetEnabled(EatPrompt, true)
-        PromptSetVisible(EatPrompt, true)
-        PromptSetHoldMode(EatPrompt, true)
-        PromptSetGroup(EatPrompt, BlueBerrygroup)
-        PromptRegisterEnd(EatPrompt)
-    end)
-end
 
 function CollectBlueberry()
     Citizen.CreateThread(function()
@@ -45,15 +28,14 @@ function CollectBlueberry()
 end
 
 Citizen.CreateThread(function()
-    Wait(2000)
-    EatBlueberry()
+    Wait(2000)    
     CollectBlueberry()
     while true do
         Wait(1)
         local playerped = PlayerPedId()
         if checkbush < GetGameTimer() and not IsPedOnMount(playerped) and not IsPedInAnyVehicle(playerped) and not eat and cooldown < 1 then
             bush = GetClosestBush()
-            checkbush = GetGameTimer() + 500
+            checkbush = GetGameTimer() + 1500
         end
         if bush then
             if active == false then
@@ -65,45 +47,9 @@ Citizen.CreateThread(function()
                 oldBush[tostring(bush)] = true
                 goCollect()
             end
-            if PromptHasHoldModeCompleted(EatPrompt) then
-                eat = true
-                active = true
-				oldBush[tostring(bush)] = true
-                goEat()
-                amount = amount + 1
-                if amount == 4  then
-                    TriggerEvent("redem_roleplay:Tip", "Do not eat blueberries too often, this can result in poisoning!", 4000)
-                end
-                if amount > 4 then
-                    Wait(2300)
-                    startPoisone()
-                end
-            end
-        else
-
         end
     end
 end)
-
-
-function goEat()
-    local playerPed = PlayerPedId()
-    RequestAnimDict("mech_pickup@plant@berries")
-    while not HasAnimDictLoaded("mech_pickup@plant@berries") do
-        Wait(100)
-    end
-    TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "enter_lf", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    Wait(800)
-    TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    Wait(2300)
-    TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    Wait(2500)
-    -- TriggerServerEvent('wwrp_status:eatberry') -- HERE IS PLACE TO YOU STATUS/BASICNEEDS TRIGGER
-
-    eat = false
-    active = false
-    ClearPedTasks(playerPed)
-end
 
 function goCollect()
     local playerPed = PlayerPedId()
@@ -120,11 +66,8 @@ function goCollect()
     ClearPedTasks(playerPed)
 end
 
-
-
-
-RegisterNetEvent('redemrp_blueberry:EatBlueBerry')
-AddEventHandler('redemrp_blueberry:EatBlueBerry', function()
+RegisterNetEvent('rdx:EatBlueBerry')
+AddEventHandler('rdx:EatBlueBerry', function()
     local playerPed = PlayerPedId()
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
@@ -134,12 +77,9 @@ AddEventHandler('redemrp_blueberry:EatBlueBerry', function()
     Wait(2500)
     TriggerServerEvent('wwrp_status:eatberry')
     amount = amount + 1
-    if amount == 4  then
-        TriggerEvent("redem_roleplay:Tip", "Do not eat blueberries too often, this can result in poisoning!", 4000)
-    end
-    if amount > 4 then
-        Wait(2300)
-        startPoisone()
+    if amount > 5 then
+        Wait(15000)
+        startSickness()
     end
     ClearPedTasks(playerPed)
 end)
@@ -148,15 +88,13 @@ end)
 Citizen.CreateThread(function()
     while true do
         Wait(60000)
-        if amount > 0 then
-            amount = amount - 1
+        if stomach > 0 then
+            stomach = stomach - 1
         end
     end
 end)
 
-
-
-function startPoisone()
+function startSickness()
     local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
     local anim = "idle_g"
     RequestAnimDict(dict)
@@ -177,7 +115,6 @@ function startPoisone()
         ClearPedTasksImmediately(PlayerPedId())
     end)
 end
-
 
 function GetClosestBush()
     local playerped = PlayerPedId()
