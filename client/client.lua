@@ -27,6 +27,14 @@ function CollectBlueberry()
     end)
 end
 
+RegisterNetEvent('rdx:alert')	
+AddEventHandler('rdx:alert', function(txt)
+    SetTextScale(0.5, 0.5)
+    local str = Citizen.InvokeNative(0xFA925AC00EB830B9, 10, "LITERAL_STRING", txt, Citizen.ResultAsLong())
+    Citizen.InvokeNative(0xFA233F8FE190514C, str)
+    Citizen.InvokeNative(0xE9990552DEC71600)
+end)
+
 Citizen.CreateThread(function()
     Wait(2000)    
     CollectBlueberry()
@@ -45,23 +53,26 @@ Citizen.CreateThread(function()
             if PromptHasHoldModeCompleted(CollectPrompt) then
                 active = true
                 oldBush[tostring(bush)] = true
-                goCollect()
+                goCollect(bush)
             end
         end
     end
 end)
 
-function goCollect()
+function goCollect(bush)
     local playerPed = PlayerPedId()
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
         Wait(100)
     end
+    TaskTurnPedToFaceEntity(ped, bush, 2000)
+    --TaskTurnPedToFaceEntity(currentPetPed, ped, 5000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "enter_lf", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(2500)
-    PlaySfx()
+    PlaySfx('page',0.25)
+   
     TriggerServerEvent('Blueberry:Add', playerPed)
     active = false
     ClearPedTasks(playerPed)
@@ -75,6 +86,7 @@ AddEventHandler('Blueberry:Eat', function()
         Wait(100)
     end
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
+    PlaySfx('eat',0.3)
     Wait(2500)
 
     stomach = stomach + 1
@@ -93,6 +105,7 @@ function startSickness()
         Wait(100)
     end
     local test = 10
+    PlaySfx('heartbeat',0.35)
     Citizen.CreateThread(function()
         while test > 0 do           
             if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
@@ -140,6 +153,6 @@ Citizen.CreateThread(function()
     end
 end)
 
-function PlaySfx()
-    TriggerServerEvent('InteractSound_SV:PlayOnSource', Config.Sfx, Config.Volume) 
+function PlaySfx(sound,volume)
+    TriggerServerEvent('InteractSound_SV:PlayOnSource', sound, volume) 
 end
