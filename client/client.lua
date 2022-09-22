@@ -58,16 +58,17 @@ function goCollect()
         Wait(100)
     end
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "enter_lf", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    Wait(800)
+    Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    Wait(2300)
-    TriggerServerEvent("rdx:addBlueBerry")
+    Wait(2500)
+    PlaySfx()
+    TriggerServerEvent('Blueberry:Add', playerPed)
     active = false
     ClearPedTasks(playerPed)
 end
 
-RegisterNetEvent('rdx:EatBlueBerry')
-AddEventHandler('rdx:EatBlueBerry', function()
+RegisterNetEvent('Blueberry:Eat')
+AddEventHandler('Blueberry:Eat', function()
     local playerPed = PlayerPedId()
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
@@ -75,31 +76,16 @@ AddEventHandler('rdx:EatBlueBerry', function()
     end
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(2500)
-    
+
     stomach = stomach + 1
-    if stomach > 0 then
+    if stomach >= 5 then
         Wait(2000)
-        startRegen() 
-    else if stomach > 5 then
-        Wait(2000)
-        startSickness() 
-            
+        startSickness()             
     end
     ClearPedTasks(playerPed)
 end)
 
-
-Citizen.CreateThread(function()
-    while true do
-        Wait(30000)
-        if stomach > 0 then
-            stomach = stomach - 1
-        end
-    end
-end)
-
-function startSickness()
-    
+function startSickness()    
     local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
     local anim = "idle_g"
     RequestAnimDict(dict)
@@ -108,43 +94,17 @@ function startSickness()
     end
     local test = 10
     Citizen.CreateThread(function()
-        while test > 0 do
-            local IsPedSick = true
+        while test > 0 do           
             if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
                 TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
             end
-            Wait(5000)
+            Wait(10000)
             local hp = GetEntityHealth(PlayerPedId())
             SetEntityHealth(PlayerPedId(),hp-5)
             test = test - 1
         end
         ClearPedTasksImmediately(PlayerPedId())
-        IsPedSick = false
-    end)
-end
-
-function startRegen()
-    local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
-    local anim = "idle_g"
-    RequestAnimDict(dict)
-    while not HasAnimDictLoaded(dict) do
-        Wait(100)
-    end
-    local test = 10
-    Citizen.CreateThread(function()
-        while test > 0 do
-            if IsPedSick == true then
-               break
-            end    
-            if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
-                TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
-            end
-            Wait(2000)
-            local hp = GetEntityHealth(PlayerPedId())
-            SetEntityHealth(PlayerPedId(),hp+5)
-            test = test - 1
-        end
-        ClearPedTasksImmediately(PlayerPedId())
+       
     end)
 end
 
@@ -169,4 +129,17 @@ function GetClosestBush()
     if IsItemsetValid(itemSet) then
         DestroyItemset(itemSet)
     end
+end
+
+Citizen.CreateThread(function()
+    while true do
+      Wait(30000)       
+       if stomach > 0 then
+          stomach = stomach - 1       
+       end        
+    end
+end)
+
+function PlaySfx()
+    TriggerServerEvent('InteractSound_SV:PlayOnSource', Config.Sfx, Config.Volume) 
 end
