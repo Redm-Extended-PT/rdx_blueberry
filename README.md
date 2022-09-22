@@ -6,7 +6,8 @@ A Blueberry harvesting for (RDX) RedM Extended Framework
 - Add InteractSound to resources
 - Add rdx_blueberry to resources
 
-- Add to Server.cfg
+- Add to Server cfg
+
 start InteractSound
 
 start rdx_blueberry
