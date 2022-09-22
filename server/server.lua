@@ -6,9 +6,6 @@ AddEventHandler('Blueberry:Add', function()
 	local xPlayer = RDX.GetPlayerFromId(source)	
 	local item = math.random(1,3)
 	local amount = 1
-	--math.randomseed(GetGameTimer())
-
-	--xPlayer.addInventoryItem('item_blueberry',amount)
 	xPlayer.addInventoryItem(Config.ItemSet[item],amount)
 	TriggerClientEvent('rdx:showNotification', Config.MsgSet[item], 0, 0, centre)  
 	item = 0
