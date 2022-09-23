@@ -61,12 +61,14 @@ end)
 
 function goCollect(bush)
     local playerPed = PlayerPedId()
+    
+    TaskTurnPedToFaceEntity(playerPed, bush, 1000)
+    
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
         Wait(100)
-    end
-    TaskTurnPedToFaceEntity(ped, bush, 2000)
-    --TaskTurnPedToFaceEntity(currentPetPed, ped, 5000)
+    end    
+    Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "enter_lf", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
