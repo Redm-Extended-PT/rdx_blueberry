@@ -50,7 +50,7 @@ Citizen.CreateThread(function()
         end
         if bush then
             if active == false then
-                local BlueBerryGroupName  = CreateVarString(10, 'LITERAL_STRING', "Berries")
+                local BlueBerryGroupName  = CreateVarString(10, 'LITERAL_STRING', "Blueberry Bush")
                 PromptSetActiveGroupThisFrame(BlueBerrygroup, BlueBerryGroupName)
             end
             if PromptHasHoldModeCompleted(CollectPrompt) then
