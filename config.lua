@@ -1,6 +1,7 @@
 Config = {}
 
 Config.Volume = 0.25
+Config.UseInteractSound = true
 
 Config.ItemSet = {  
  [1] = "item_blueberry",
