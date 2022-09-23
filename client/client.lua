@@ -72,8 +72,10 @@ function goCollect(bush)
     Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(2500)
+    if Config.UseInteractSound then
     TriggerEvent('rdx:playsound','page',0.25)
-    TriggerServerEvent('Blueberry:Add', playerPed, raspberry)
+    end    
+    TriggerServerEvent('Blueberry:Add', playerPed)
     active = false
     ClearPedTasks(playerPed)
 end
