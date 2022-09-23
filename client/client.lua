@@ -1,4 +1,4 @@
-RDX = nil
+RDX, BLB = nil, {}
 Citizen.CreateThread(function()	while RDX == nil do TriggerEvent('rdx:getSharedObject', function(obj) RDX = obj end) Citizen.Wait(300) end end)
 
 local CollectPrompt
@@ -13,7 +13,7 @@ local raspberry = false
 
 print('BlueBerrygroup: ' .. BlueBerrygroup)
 
-function CollectBlueberry()
+function BLB:CollectBlueberry()
     Citizen.CreateThread(function()
         local str = 'Collect'
         local wait = 0
@@ -40,7 +40,7 @@ end)
 
 Citizen.CreateThread(function()
     Wait(100)    
-    CollectBlueberry()    
+    BLB:CollectBlueberry()  
     while true do
         Wait(1)  
         local playerped = PlayerPedId()
@@ -56,13 +56,13 @@ Citizen.CreateThread(function()
             if PromptHasHoldModeCompleted(CollectPrompt) then
                 active = true
                 oldBush[tostring(bush)] = true
-                goCollect(bush)
+                BLB:GoCollect(bush)
             end
         end
     end
 end)
 
-function goCollect(bush)
+function BLB:GoCollect(bush)
     local playerPed = PlayerPedId()
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
@@ -74,7 +74,7 @@ function goCollect(bush)
     Wait(2500)
     if Config.UseInteractSound then
     TriggerEvent('rdx:playsound','page',0.25)
-    end    
+    end
     TriggerServerEvent('Blueberry:Add', playerPed)
     active = false
     ClearPedTasks(playerPed)
@@ -88,20 +88,22 @@ AddEventHandler('Blueberry:Eat', function()
         Wait(100)
     end    
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
+    if Config.UseInteractSound then
     TriggerEvent('rdx:playsound','eat',0.25)
+    end
     local health = GetEntityHealth(PlayerPedId())
     local healthmod = health / 8
     SetEntityHealth(PlayerPedId(), health + healthmod)
     stomach = stomach + 1
-    if stomach > 5 then
+    if stomach >= Config.TriggerSickness then
         Wait(2000)
-        startSickness()             
+        BLB:StartSickness()             
     end
     ClearPedTasks(playerPed)
   
 end)
 
-function startSickness()    
+function BLB:StartSickness()    
     local dict = "amb_misc@world_human_vomit_kneel@male_a@idle_c"
     local anim = "idle_g"
     RequestAnimDict(dict)
@@ -111,12 +113,16 @@ function startSickness()
     local test = 5
     
     Citizen.CreateThread(function()
-        while test > 0 do   
-            TriggerEvent('rdx:playsound',PlayerPedId(),'heartbeat',0.35)        
+        while test > 0 do 
+            
+            if Config.UseInteractSound then  
+            TriggerEvent('rdx:playsound',PlayerPedId(),'heartbeat',0.35) 
+            end
+
             if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
                 TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
             end
-            Wait(10000)            
+            Wait(7500)            
             local health = GetEntityHealth(PlayerPedId())
             local healthmod = health / 8
             SetEntityHealth(PlayerPedId(),health - healthmod)
