@@ -88,7 +88,8 @@ AddEventHandler('Blueberry:Eat', function()
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     PlaySfx('eat',0.3)
     Wait(2500)
-
+    local hp = GetEntityHealth(PlayerPedId())
+    SetEntityHealth(PlayerPedId(),hp+10)
     stomach = stomach + 1
     if stomach >= 5 then
         Wait(2000)
@@ -113,7 +114,7 @@ function startSickness()
             end
             Wait(10000)
             local hp = GetEntityHealth(PlayerPedId())
-            SetEntityHealth(PlayerPedId(),hp-5)
+            SetEntityHealth(PlayerPedId(),hp-15)
             test = test - 1
         end
         ClearPedTasksImmediately(PlayerPedId())
