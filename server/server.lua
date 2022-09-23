@@ -18,3 +18,4 @@ RDX.RegisterUsableItem('item_blueberry', function(source)
    TriggerClientEvent('Blueberry:Eat', source)
    TriggerClientEvent('rdx:alert',source,"You ate a blueberry", 3)	
 end)
+

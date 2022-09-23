@@ -9,6 +9,8 @@ local oldBush = {}
 local checkbush = 0
 local bush
 local BlueBerrygroup = GetRandomIntInRange(0, 0xffffff)
+local raspberry = false
+
 print('BlueBerrygroup: ' .. BlueBerrygroup)
 
 function CollectBlueberry()
@@ -35,19 +37,20 @@ AddEventHandler('rdx:alert', function(txt)
     Citizen.InvokeNative(0xE9990552DEC71600)
 end)
 
+
 Citizen.CreateThread(function()
-    Wait(2000)    
-    CollectBlueberry()
+    Wait(100)    
+    CollectBlueberry()    
     while true do
-        Wait(1)
+        Wait(1)  
         local playerped = PlayerPedId()
-        if checkbush < GetGameTimer() and not IsPedOnMount(playerped) and not IsPedInAnyVehicle(playerped) and not eat and cooldown < 1 then
+        if checkbush < GetGameTimer() and not IsPedOnMount(playerped) and not IsPedInAnyVehicle(playerped) and not IsPedShooting(PlayerPedId()) and not IsPlayerFreeAiming(playerped) and not IsPedRunning(playerped) and not eat and cooldown < 1 then
             bush = GetClosestBush()
             checkbush = GetGameTimer() + 1500
         end
         if bush then
             if active == false then
-                local BlueBerryGroupName  = CreateVarString(10, 'LITERAL_STRING', "BlueBerry")
+                local BlueBerryGroupName  = CreateVarString(10, 'LITERAL_STRING', "Berries")
                 PromptSetActiveGroupThisFrame(BlueBerrygroup, BlueBerryGroupName)
             end
             if PromptHasHoldModeCompleted(CollectPrompt) then
@@ -61,21 +64,16 @@ end)
 
 function goCollect(bush)
     local playerPed = PlayerPedId()
-    
-    TaskTurnPedToFaceEntity(playerPed, bush, 1000)
-    
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
         Wait(100)
-    end    
-    Wait(1000)
+    end
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "enter_lf", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(1000)
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "base", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
     Wait(2500)
-    PlaySfx('page',0.25)
-   
-    TriggerServerEvent('Blueberry:Add', playerPed)
+    TriggerEvent('rdx:playsound','page',0.25)
+    TriggerServerEvent('Blueberry:Add', playerPed, raspberry)
     active = false
     ClearPedTasks(playerPed)
 end
@@ -86,18 +84,19 @@ AddEventHandler('Blueberry:Eat', function()
     RequestAnimDict("mech_pickup@plant@berries")
     while not HasAnimDictLoaded("mech_pickup@plant@berries") do
         Wait(100)
-    end
+    end    
     TaskPlayAnim(playerPed, "mech_pickup@plant@berries", "exit_eat", 8.0, -0.5, -1, 0, 0, true, 0, false, 0, false)
-    PlaySfx('eat',0.3)
-    Wait(2500)
-    local hp = GetEntityHealth(PlayerPedId())
-    SetEntityHealth(PlayerPedId(),hp+10)
+    TriggerEvent('rdx:playsound','eat',0.25)
+    local health = GetEntityHealth(PlayerPedId())
+    local healthmod = health / 8
+    SetEntityHealth(PlayerPedId(), health + healthmod)
     stomach = stomach + 1
-    if stomach >= 5 then
+    if stomach > 5 then
         Wait(2000)
         startSickness()             
     end
     ClearPedTasks(playerPed)
+  
 end)
 
 function startSickness()    
@@ -107,17 +106,19 @@ function startSickness()
     while not HasAnimDictLoaded(dict) do
         Wait(100)
     end
-    local test = 10
-    PlaySfx('heartbeat',0.35)
+    local test = 5
+    
     Citizen.CreateThread(function()
-        while test > 0 do           
+        while test > 0 do   
+            TriggerEvent('rdx:playsound',PlayerPedId(),'heartbeat',0.35)        
             if not IsEntityPlayingAnim( PlayerPedId() ,dict, anim, 31) then
                 TaskPlayAnim( PlayerPedId(), dict, anim, 8.0, -8.0, -1, 31, 0, true, 0, false, 0, false)
             end
-            Wait(10000)
-            local hp = GetEntityHealth(PlayerPedId())
-            SetEntityHealth(PlayerPedId(),hp-15)
-            test = test - 1
+            Wait(10000)            
+            local health = GetEntityHealth(PlayerPedId())
+            local healthmod = health / 8
+            SetEntityHealth(PlayerPedId(),health - healthmod)
+            test = test - 1             
         end
         ClearPedTasksImmediately(PlayerPedId())
        
@@ -132,11 +133,19 @@ function GetClosestBush()
         for index = 0, size - 1 do
             local entity = GetIndexedItemInItemset(index, itemSet)
             local model_hash = GetEntityModel(entity)
-            if (model_hash ==  477619010 or model_hash ==  85102137 or model_hash ==  -1707502213) and not oldBush[tostring(entity)] then
+            if model_hash ==  477619010 and not oldBush[tostring(entity)] then
               if IsItemsetValid(itemSet) then
                   DestroyItemset(itemSet)
+                  raspberry = false
               end
               return entity
+            elseif model_hash ==  85102137 and not oldBush[tostring(entity)] then
+                
+              if IsItemsetValid(itemSet) then
+                   DestroyItemset(itemSet)
+                   raspberry = true
+              end
+              return entity  
             end
         end
     else
@@ -147,15 +156,17 @@ function GetClosestBush()
     end
 end
 
+-- Stomach
 Citizen.CreateThread(function()
     while true do
-      Wait(30000)       
+      Wait(15000)       
        if stomach > 0 then
           stomach = stomach - 1       
        end        
     end
 end)
 
-function PlaySfx(sound,volume)
+RegisterNetEvent('rdx:playsound')
+AddEventHandler('rdx:playsound', function(sound,volume)
     TriggerServerEvent('InteractSound_SV:PlayOnSource', sound, volume) 
-end
+end)
