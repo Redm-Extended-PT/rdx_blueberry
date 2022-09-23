@@ -9,7 +9,7 @@ Config.ItemSet = {
 }
 
 Config.MsgSet = {
-    [1] =  "Found a Blueberry!",
-    [2] =  "Found a Branch!",
-    [3] =  "Found a Cricket!",
+ [1] =  "Found a Blueberry!",
+ [2] =  "Found a Branch!",
+ [3] =  "Found a Cricket!",
 }
